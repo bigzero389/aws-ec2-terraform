@@ -20,7 +20,43 @@ terraform destroy [--auto-approve]
 * terraform apply 를 하면 스크립트가 실행된다. yes 를 입력하여 실행할지 여부를 이중 체크한다.
 * terraform destroy 하면 해당 자원을 모두 삭제한다.
 
+## 순서
+* vpc => ec2 => db => ec2-lb
+* db 는 시간이 오래 소요됨. ssl disable 에서 접속해야 함.
+* all , s3 는 별도임.
+
 ## 폴더구성
+### vpc
+* VPC 환경만 구성한다.
+* 기본적인 네트워크 환경들도 구성한다. 즉, all 에서 EC2 만 제외하고 구성된다.
+* destroy 하면 VPC 가 전체 삭제된다. 이때 vpc terraform 으로 만들어지지 않은 다른 자원들이 종속되어 있으면 삭제가 안된다.
+* 위에 all 에서 변경해야 되는 부분들을 변경하고 실행한다.
+
+### ec2
+* 지정된 tag 이름으로 만들어진 VPC 정보에 기반하여 EC2 만 생성한다. 
+* destroy 하면 해당 EC2 를 삭제한다.
+* 보안그룹을 여기서 설정하게 작업했음.
+
+* 아래 부분을 자기 환경에 맞는 값으로 수정해서 실행한다.
+```
+locals {
+  svc_nm = "dyheo"
+  pem_file = "dyheo-histech-2"
+```
+[terraform example reference](https://github.com/largezero/ecs-with-codepipeline-example-by-terraform).  
+* aws cli 를 이용하여 ami list 가져오기
+```
+aws ec2 describe-images \ 
+--filters Name=architecture,Values=x86_64 Name=name,Values="amzn2-ami-ecs-hvm-*"
+```
+
+### db
+* db module 을 사용한다.
+* 삭제시 module 이 정상작동 하지 않는 문제가 있는 것으로 추정됨
+
+### ec2-lb
+
+
 ### all
 * VPC 를 구성하고 EC2 를 한대 만든다.
 * destroy 하면 VPC 및 EC2 등 모든 자원이 삭제된다.
@@ -49,28 +85,5 @@ locals {
   self = false
 }
 
-```
-
-### vpc
-* VPC 환경만 구성한다.
-* 기본적인 네트워크 환경들도 구성한다. 즉, all 에서 EC2 만 제외하고 구성된다.
-* destroy 하면 VPC 가 전체 삭제된다. 이때 vpc terraform 으로 만들어지지 않은 다른 자원들이 종속되어 있으면 삭제가 안된다.
-* 위에 all 에서 변경해야 되는 부분들을 변경하고 실행한다.
-
-### ec2
-* 지정된 tag 이름으로 만들어진 VPC 정보에 기반하여 EC2 만 생성한다. 
-* destroy 하면 해당 EC2 를 삭제한다.
-
-* 아래 부분을 자기 환경에 맞는 값으로 수정해서 실행한다.
-```
-locals {
-  svc_nm = "dyheo"
-  pem_file = "dyheo-histech-2"
-```
-[terraform example reference](https://github.com/largezero/ecs-with-codepipeline-example-by-terraform).  
-* aws cli 를 이용하여 ami list 가져오기
-```
-aws ec2 describe-images \ 
---filters Name=architecture,Values=x86_64 Name=name,Values="amzn2-ami-ecs-hvm-*"
 ```
 

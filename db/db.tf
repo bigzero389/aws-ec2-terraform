@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 locals {
-  svc_nm = "dyheo"
+  svc_nm = "dy-ec2"
   #pem_file = "dyheo-histech"
 }
 
@@ -17,10 +17,17 @@ data "aws_vpc" "this" {
 }
 
 ## TAG NAME 으로 security group 을 가져온다.
-data "aws_security_group" "security-group" {
+data "aws_security_group" "sg-core" {
   filter {
     name = "tag:Name"
-    values = ["${local.svc_nm}-sg"]
+    values = ["${local.svc_nm}-sg-core"]
+  }
+}
+
+data "aws_security_group" "sg-ec2" {
+  filter {
+    name = "tag:Name"
+    values = ["${local.svc_nm}-sg-ec2"]
   }
 }
 
@@ -46,7 +53,7 @@ module "db" {
 
   engine            = "mysql"
   engine_version    = "5.7.19"
-  instance_class    = "db.t3.micro"
+  instance_class    = "db.t3.small"
   allocated_storage = 5
 
   name     = "dyheo"
@@ -58,7 +65,7 @@ module "db" {
 
   iam_database_authentication_enabled = true
 
-  vpc_security_group_ids = ["${data.aws_security_group.security-group.id}"]
+  vpc_security_group_ids = [data.aws_security_group.sg-core.id,data.aws_security_group.sg-ec2.id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"

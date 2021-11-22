@@ -6,7 +6,7 @@ provider "aws" {
 }
 
 locals {
-  svc_nm = "dy"
+  svc_nm = "dy-ec2"
   creator = "dyheo"
   group = "t-dyheo"
 
@@ -229,7 +229,7 @@ data "aws_route53_zone" "histech_dot_net" {
 
 resource "aws_route53_record" "public_dyheo" {
   zone_id = "${data.aws_route53_zone.histech_dot_net.zone_id}"
-  name    = "dyheo-ec2.hist-tech.net"
+  name    = "dy-ec2.hist-tech.net"
   type    = "A"
 
   alias {

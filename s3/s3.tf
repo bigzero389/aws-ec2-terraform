@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 locals {
-  svc_nm = "dy"
+  svc_nm = "dy-ec2"
   creator = "dyheo"
   group = "dyheo-dev"
 }

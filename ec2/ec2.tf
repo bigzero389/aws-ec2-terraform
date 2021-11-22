@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 locals {
-  svc_nm = "dy"
+  svc_nm = "dy-ec2"
   creator = "dyheo"
   group = "t-dyheo"
 
@@ -13,7 +13,7 @@ locals {
 
   ## EC2 를 만들기 위한 로컬변수 선언
   ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
-  instance_type = "t3.micro"
+  instance_type = "t3.small"
 }
 
 ## TAG NAME 으로 vpc id 를 가져온다.
@@ -42,7 +42,22 @@ resource "aws_security_group" "sg-ec2" {
     from_port       = 3000
     protocol        = "tcp"
     to_port         = 3000
-    cidr_blocks = ["${data.aws_vpc.this.cidr_block}"]
+    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+  }
+
+  ingress {
+    from_port       = 8080 
+    protocol        = "tcp"
+    to_port         = 8080
+    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+  }
+
+  ## mysql port 
+  ingress {
+    from_port       = 3306
+    protocol        = "tcp"
+    to_port         = 3306
+    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
   }
 
   egress {
@@ -75,9 +90,10 @@ data "aws_subnet" "public" {
 
 # AWS EC2
 resource "aws_instance" "dyheo-ec2" {
+  ## public subnet 개수만큼 ec2 를 만든다.
   count = length(data.aws_subnet_ids.public.ids)
   ami = "${local.ami}"
-  #associate_public_ip_address = true
+  associate_public_ip_address = true
   instance_type = "${local.instance_type}"
   key_name = "${local.pem_file}"
   vpc_security_group_ids = [

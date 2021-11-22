@@ -11,7 +11,7 @@ variable "region" {
 
 locals {
   ## 신규 VPC 를 구성하는 경우 svc_nm 과 pem_file 를 새로 넣어야 한다.
-  svc_nm = "dy"
+  svc_nm = "dy-ec2"
   creator = "dyheo"
   group = "t-dyheo"
 
@@ -19,14 +19,14 @@ locals {
 
   ## 신규 구축하는 시스템의 cidr 를 지정한다. 
   public_subnets = {
-    "${var.region}a" = "10.55.101.0/24"
-#    "${var.region}b" = "10.55.102.0/24"
-    "${var.region}c" = "10.55.103.0/24"
+    "${var.region}a" = "10.66.101.0/24"
+#    "${var.region}b" = "10.66.102.0/24"
+    "${var.region}c" = "10.66.103.0/24"
   }
   private_subnets = {
-    "${var.region}a" = "10.55.111.0/24"
-#    "${var.region}b" = "10.55.112.0/24"
-    "${var.region}c" = "10.55.113.0/24"
+    "${var.region}a" = "10.66.111.0/24"
+#    "${var.region}b" = "10.66.112.0/24"
+    "${var.region}c" = "10.66.113.0/24"
   }
   azs = {
     "${var.region}a" = "a"
@@ -37,7 +37,7 @@ locals {
 
 resource "aws_vpc" "this" {
   ## cidr 를 지정해야 한다.
-  cidr_block = "10.55.0.0/16"
+  cidr_block = "10.66.0.0/16"
 
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -176,7 +176,7 @@ resource "aws_security_group" "sg-core" {
       from_port = -1
       to_port = -1
       protocol = "icmp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.55.0.0/16"]
+      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.66.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -188,7 +188,7 @@ resource "aws_security_group" "sg-core" {
       to_port          = 22
       protocol         = "tcp"
       type             = "ssh"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.55.0.0/16"]
+      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.66.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
