@@ -1,9 +1,13 @@
 # AWS 를 이용한 Terraform Example
 * 사전준비사항  
-: AWS IAM 계정이 있어야 한다.  
-: EC2 의 key pair 가 있어야 한다.  
-: Local PC 에 ~/.ssh 에 key pair pem 파일이 있어야 한다.  
-: Local PC 에 Terraform 이 설치되어 있어야 한다.  
+  * AWS IAM 계정이 있어야 한다.   
+    AWS CLI([download](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/install-cliv2-windows.html)) 와 Access/Secret Key 셋팅이 되어 있어야 한다.  
+  * EC2 의 key pair 가 있어야 한다.
+    Local PC 에 ~/.ssh 에 key pair pem 파일이 있어야 한다.   
+    window os 에서 pem 사용하기 ([reference](https://techsoda.net/windows10-pem-file-permission-settings/))  
+  * Local PC 에 Terraform 이 설치되어 있어야 한다.([download](https://www.terraform.io/downloads.html))    
+  * Git Client 가 설치되어 있어야 한다. ([download](https://git-scm.com/download))
+  * github 연결을 위한 ssh key 가 있어야 한다. OpenSSH client 가 있으면 ssh-keygen 을 실행하여 key 를 생성한다.
 
 ## Terraform 기본 사용법
 ```
