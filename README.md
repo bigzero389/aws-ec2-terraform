@@ -7,7 +7,11 @@
     window os 에서 pem 사용하기 ([reference](https://techsoda.net/windows10-pem-file-permission-settings/))  
   * Local PC 에 Terraform 이 설치되어 있어야 한다.([download](https://www.terraform.io/downloads.html))    
   * Git Client 가 설치되어 있어야 한다. ([download](https://git-scm.com/download))
-  * github 연결을 위한 ssh key 가 있어야 한다. OpenSSH client 가 있으면 ssh-keygen 을 실행하여 key 를 생성한다.
+  * github 연결을 위한 ssh key 가 있어야 한다. OpenSSH client 가 있으면 ssh-keygen 을 실행하여 key 를 생성한다.  
+
+* 옵션사항
+  * docker desktop 설치 ([reference](https://www.docker.com/products/docker-desktop))
+  * WSL 2 및 윈도우용 우분투 설치([reference](https://docs.microsoft.com/ko-kr/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package))
 
 ## Terraform 기본 사용법
 ```
@@ -25,9 +29,10 @@ terraform destroy [--auto-approve]
 * terraform destroy 하면 해당 자원을 모두 삭제한다.
 
 ## 순서
-* vpc => ec2 => db => ec2-lb
+* vpc => ec2 => ec2-lb  (이 3개의 폴더들은 종속관계를 가진다.)
+* route53 은 80 을 443 으로 redirect 할때 인증서와 관계된다.
 * db 는 시간이 오래 소요됨. ssl disable 에서 접속해야 함.
-* all , s3 는 별도임.
+* all ,s3, db 는 별도임.
 
 ## 폴더구성
 ### vpc
@@ -40,7 +45,6 @@ terraform destroy [--auto-approve]
 * 지정된 tag 이름으로 만들어진 VPC 정보에 기반하여 EC2 만 생성한다. 
 * destroy 하면 해당 EC2 를 삭제한다.
 * 보안그룹을 여기서 설정하게 작업했음.
-
 * 아래 부분을 자기 환경에 맞는 값으로 수정해서 실행한다.
 ```
 locals {
@@ -53,15 +57,21 @@ locals {
 aws ec2 describe-images \ 
 --filters Name=architecture,Values=x86_64 Name=name,Values="amzn2-ami-ecs-hvm-*"
 ```
+### ec2-lb
+* 80 포트를 443 으로 redirect 한다.
+
+### route53
+* hist-tech.net 도메인으로 작동한다.
 
 ### db
 * db module 을 사용한다.
 * 삭제시 module 이 정상작동 하지 않는 문제가 있는 것으로 추정됨
 
-### ec2-lb
-
+### s3
+* s3 는 위에 폴더와 별도로 작동한다. 즉, 종속관계가 없다.
 
 ### all
+* all 은 위에 폴더와 별도로 작동한다. 즉, 종속관계가 없다.
 * VPC 를 구성하고 EC2 를 한대 만든다.
 * destroy 하면 VPC 및 EC2 등 모든 자원이 삭제된다.
 
@@ -71,7 +81,7 @@ aws ec2 describe-images \
 locals {
   ## 신규 VPC 를 구성하는 경우 svc_nm 과 pem_file 를 새로 넣어야 한다.
   svc_nm = "dyheo"
-  pem_file = "dyheo-histech-2"
+  pem_file = "dyheo-histech"
  ...
 ```
 * 아래 cidr_blocks 에 본인이 ssh 로 접속할 공인IP 로 변경한다.

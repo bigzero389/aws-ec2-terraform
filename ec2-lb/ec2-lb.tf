@@ -222,19 +222,18 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-data "aws_route53_zone" "histech_dot_net" {
-  name = "hist-tech.net."
-}
-
-
-resource "aws_route53_record" "public_dyheo" {
-  zone_id = "${data.aws_route53_zone.histech_dot_net.zone_id}"
-  name    = "dy-ec2.hist-tech.net"
-  type    = "A"
-
-  alias {
-    name     = "${aws_lb.public.dns_name}"
-    zone_id  = "${aws_lb.public.zone_id}"
-    evaluate_target_health = true
-  }
-}
+#data "aws_route53_zone" "histech_dot_net" {
+#  name = "hist-tech.net."
+#}
+#
+#resource "aws_route53_record" "public_dyheo" {
+#  zone_id = "${data.aws_route53_zone.histech_dot_net.zone_id}"
+#  name    = "dy-ec2.hist-tech.net"
+#  type    = "A"
+#
+#  alias {
+#    name     = "${aws_lb.public.dns_name}"
+#    zone_id  = "${aws_lb.public.zone_id}"
+#    evaluate_target_health = true
+#  }
+#}
