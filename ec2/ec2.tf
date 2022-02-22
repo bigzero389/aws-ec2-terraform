@@ -5,22 +5,24 @@ provider "aws" {
 }
 
 locals {
-  svc_nm = "dy-ec2"
-  creator = "dyheo"
-  group = "t-dyheo"
+  Service = "k8s"
+  Creator = "dyheo"
+  Group = "consulting"
 
   pem_file = "dyheo-histech"
 
+  # ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
+  # instance_type = "t3.small"
   ## EC2 를 만들기 위한 로컬변수 선언
-  ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
-  instance_type = "t3.small"
+  ami = "ami-00632d95bb5b7136d"  ## AMAZON LINUX 2 ARM
+  instance_type = "t4g.micro"    ## vCPU : 2, GiB : 1
 }
 
 ## TAG NAME 으로 vpc id 를 가져온다.
 data "aws_vpc" "this" {
   filter {
     name = "tag:Name"
-    values = ["${local.svc_nm}-vpc"]
+    values = ["${local.Service}-vpc"]
   }
 }
 
@@ -29,57 +31,57 @@ data "aws_security_group" "sg-core" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.svc_nm}-sg-core"]
+    values = ["${local.Service}-sg-core"]
   }
 }
 
-resource "aws_security_group" "sg-ec2" {
-  name = "${local.svc_nm}-sg-ec2"
-  description = "ec2 server 80 service test"
-  vpc_id = "${data.aws_vpc.this.id}"
-
-  ingress {
-    from_port       = 3000
-    protocol        = "tcp"
-    to_port         = 3000
-    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-  }
-
-  ingress {
-    from_port       = 8080 
-    protocol        = "tcp"
-    to_port         = 8080
-    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-  }
-
-  ## mysql port 
-  ingress {
-    from_port       = 3306
-    protocol        = "tcp"
-    to_port         = 3306
-    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-  }
-
-  egress {
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${local.svc_nm}-sg-ec2"
-    Creator = "${local.creator}"
-    Group = "${local.group}"
-  }
-}
+#resource "aws_security_group" "sg-ec2" {
+#  name = "${local.Service}-sg-ec2"
+#  description = "ec2 server 80 service test"
+#  vpc_id = "${data.aws_vpc.this.id}"
+#
+#  ingress {
+#    from_port       = 3000
+#    protocol        = "tcp"
+#    to_port         = 3000
+#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+#  }
+#
+#  ingress {
+#    from_port       = 8080 
+#    protocol        = "tcp"
+#    to_port         = 8080
+#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+#  }
+#
+#  ## mysql port 
+#  ingress {
+#    from_port       = 3306
+#    protocol        = "tcp"
+#    to_port         = 3306
+#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+#  }
+#
+#  egress {
+#    from_port   = 0
+#    protocol    = "-1"
+#    to_port     = 0
+#    cidr_blocks = ["0.0.0.0/0"]
+#  }
+#
+#  tags = {
+#    Name = "${local.Service}-sg-ec2"
+#    Creator = "${local.Creator}"
+#    Group = "${local.Group}"
+#  }
+#}
 
 ## TAG NAME 으로 subnet 을 가져온다.
 data "aws_subnet_ids" "public" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.svc_nm}-sb-public-*"]
+    values = ["${local.Service}-sb-public-*"]
   }
 }
 
@@ -91,7 +93,6 @@ data "aws_subnet" "public" {
 # AWS EC2
 resource "aws_instance" "dyheo-ec2" {
   ## public subnet 개수만큼 ec2 를 만든다.
-  count = length(data.aws_subnet_ids.public.ids)
   ami = "${local.ami}"
   associate_public_ip_address = true
   instance_type = "${local.instance_type}"
@@ -101,13 +102,14 @@ resource "aws_instance" "dyheo-ec2" {
     "${aws_security_group.sg-ec2.id}"
   ]
 
+  count = length(data.aws_subnet_ids.public.ids)
   #subnet_id = "${data.aws_subnet.public.id}"
   subnet_id = element(tolist(data.aws_subnet_ids.public.ids), count.index)
 
   tags = {
-    Name = "${local.svc_nm}-ec2-${count.index + 1}",
-    Creator = "${local.creator}"
-    Group = "${local.group}"
+    Name = "${local.Service}-ec2-${count.index + 1}",
+    Creator = "${local.Creator}"
+    Group = "${local.Group}"
   }
 
 # EC2 preconfig
