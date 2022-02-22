@@ -10,23 +10,23 @@ variable "region" {
 }
 
 locals {
-  ## 신규 VPC 를 구성하는 경우 svc_nm 과 pem_file 를 새로 넣어야 한다.
-  svc_nm = "dy-ec2"
-  creator = "dyheo"
-  group = "t-dyheo"
+  ## 신규 VPC 를 구성하는 경우 Service 과 pem_file 를 새로 넣어야 한다.
+  Service = "k8s"
+  Creator = "dyheo"
+  Group = "consulting"
 
   pem_file = "dyheo-histech"
 
   ## 신규 구축하는 시스템의 cidr 를 지정한다. 
   public_subnets = {
-    "${var.region}a" = "10.66.101.0/24"
+    "${var.region}a" = "10.77.101.0/24"
 #    "${var.region}b" = "10.66.102.0/24"
-    "${var.region}c" = "10.66.103.0/24"
+    "${var.region}c" = "10.77.103.0/24"
   }
   private_subnets = {
-    "${var.region}a" = "10.66.111.0/24"
+    "${var.region}a" = "10.77.111.0/24"
 #    "${var.region}b" = "10.66.112.0/24"
-    "${var.region}c" = "10.66.113.0/24"
+    "${var.region}c" = "10.77.113.0/24"
   }
   azs = {
     "${var.region}a" = "a"
@@ -37,15 +37,15 @@ locals {
 
 resource "aws_vpc" "this" {
   ## cidr 를 지정해야 한다.
-  cidr_block = "10.66.0.0/16"
+  cidr_block = "10.77.0.0/16"
 
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${local.svc_nm}-vpc",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-vpc",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -53,9 +53,9 @@ resource "aws_internet_gateway" "this" {
   vpc_id = "${aws_vpc.this.id}"
 
   tags = {
-    Name = "${local.svc_nm}-igw",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-igw",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -68,9 +68,9 @@ resource "aws_subnet" "public" {
   availability_zone       = "${element(keys(local.public_subnets), count.index)}"
 
   tags = {
-    Name = "${local.svc_nm}-sb-public-${element(values(local.azs), count.index)}",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-sb-public-${element(values(local.azs), count.index)}",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -83,9 +83,9 @@ resource "aws_subnet" "private" {
   availability_zone       = "${element(keys(local.private_subnets), count.index)}"
 
   tags = {
-    Name = "${local.svc_nm}-sb-private-${element(values(local.azs), count.index)}",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-sb-private-${element(values(local.azs), count.index)}",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -93,9 +93,9 @@ resource "aws_default_route_table" "public" {
   default_route_table_id = "${aws_vpc.this.main_route_table_id}"
 
   tags = {
-    Name = "${local.svc_nm}-public",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-public",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -120,9 +120,9 @@ resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.this.id}"
 
   tags = {
-    Name = "${local.svc_nm}-private",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-private",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -136,9 +136,9 @@ resource "aws_eip" "nat" {
   vpc = true
 
   tags = {
-    Name = "${local.svc_nm}-eip",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-eip",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -147,9 +147,9 @@ resource "aws_nat_gateway" "this" {
   subnet_id     = "${aws_subnet.public.0.id}"
 
   tags = {
-    Name = "${local.svc_nm}-nat-gw",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-nat-gw",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
@@ -166,8 +166,8 @@ resource "aws_route" "private_nat_gateway" {
 
 # AWS Security Group
 resource "aws_security_group" "sg-core" {
-  name        = "${local.svc_nm}-sg-core"
-  description = "${local.svc_nm} security group"
+  name        = "${local.Service}-sg-core"
+  description = "${local.Service} security group"
   vpc_id      = "${aws_vpc.this.id}"
 
   ingress = [
@@ -176,7 +176,7 @@ resource "aws_security_group" "sg-core" {
       from_port = -1
       to_port = -1
       protocol = "icmp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.66.0.0/16"]
+      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.77.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -188,7 +188,7 @@ resource "aws_security_group" "sg-core" {
       to_port          = 22
       protocol         = "tcp"
       type             = "ssh"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.66.0.0/16"]
+      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.77.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -211,9 +211,9 @@ resource "aws_security_group" "sg-core" {
   ]
 
   tags = {
-    Name = "${local.svc_nm}-sg-core",
-    Creator= "${local.creator}",
-    Group = "${local.group}"
+    Name = "${local.Service}-sg-core",
+    Creator= "${local.Creator}",
+    Group = "${local.Group}"
   }
 }
 
