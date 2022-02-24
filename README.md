@@ -48,8 +48,8 @@ terraform destroy [--auto-approve]
 * 아래 부분을 자기 환경에 맞는 값으로 수정해서 실행한다.
 ```
 locals {
-  svc_nm = "dyheo"
-  pem_file = "dyheo-histech-2"
+  svc_nm = "user"
+  pem_file = "user-histech-2"
 ```
 [terraform example reference](https://github.com/largezero/ecs-with-codepipeline-example-by-terraform).  
 * aws cli 를 이용하여 ami list 가져오기
@@ -61,7 +61,7 @@ aws ec2 describe-images \
 * 80 포트를 443 으로 redirect 한다.
 
 ### route53
-* hist-tech.net 도메인으로 작동한다.
+* 지정된 도메인으로 작동한다.
 
 ### db
 * db module 을 사용한다.
@@ -80,8 +80,8 @@ aws ec2 describe-images \
  ...
 locals {
   ## 신규 VPC 를 구성하는 경우 svc_nm 과 pem_file 를 새로 넣어야 한다.
-  svc_nm = "dyheo"
-  pem_file = "dyheo-histech"
+  svc_nm = "user"
+  pem_file = "user-histech"
  ...
 ```
 * 아래 cidr_blocks 에 본인이 ssh 로 접속할 공인IP 로 변경한다.
@@ -92,7 +92,7 @@ locals {
   to_port          = 22
   protocol         = "tcp"
   type             = "ssh"
-  cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32"]
+  cidr_blocks      = ["999.999.68.23/32", "000.000.114.80/32"]
   ipv6_cidr_blocks = ["::/0"]
   prefix_list_ids  = []
   security_groups  = []

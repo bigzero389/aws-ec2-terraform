@@ -11,11 +11,11 @@ locals {
 
   pem_file = "dyheo-histech"
 
-  # ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
-  # instance_type = "t3.small"
   ## EC2 를 만들기 위한 로컬변수 선언
-  ami = "ami-00632d95bb5b7136d"  ## AMAZON LINUX 2 ARM
-  instance_type = "t4g.micro"    ## vCPU : 2, GiB : 1
+  ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
+  instance_type = "t3.small"
+  #ami = "ami-00632d95bb5b7136d"  ## AMAZON LINUX 2 ARM
+  #instance_type = "t4g.micro"    ## vCPU : 2, GiB : 1
 }
 
 ## TAG NAME 으로 vpc id 를 가져온다.
