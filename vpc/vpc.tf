@@ -11,11 +11,11 @@ variable "region" {
 
 locals {
   ## 신규 VPC 를 구성하는 경우 Service 과 pem_file 를 새로 넣어야 한다.
-  Service = "k8s"
+  Service = "dy-tf"
   Creator = "dyheo"
-  Group = "consulting"
+  Group = "cloudteam"
 
-  pem_file = "dyheo-histech"
+  #pem_file = "dyheo-histech"
 
   ## 신규 구축하는 시스템의 cidr 를 지정한다. 
   public_subnets = {
@@ -163,7 +163,12 @@ resource "aws_route" "private_nat_gateway" {
   }
 }
 
+output "aws_vpc" {
+  value = aws_vpc.this.id
+}
 
+
+/*
 # AWS Security Group
 resource "aws_security_group" "sg-core" {
   name        = "${local.Service}-sg-core"
@@ -216,4 +221,4 @@ resource "aws_security_group" "sg-core" {
     Group = "${local.Group}"
   }
 }
-
+*/
