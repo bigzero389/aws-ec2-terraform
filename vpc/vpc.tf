@@ -24,7 +24,7 @@ locals {
     "${var.region}c" = "10.77.103.0/24"
   }
   private_subnets = {
-    "${var.region}a" = "10.77.111.0/24"
+#    "${var.region}a" = "10.77.111.0/24"
 #    "${var.region}b" = "10.66.112.0/24"
     "${var.region}c" = "10.77.113.0/24"
   }
