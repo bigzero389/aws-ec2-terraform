@@ -1,28 +1,32 @@
 # AWS용 프로바이더 구성
 provider "aws" {
   profile = "default"
-  region = "ap-northeast-2"
+  #region = "ap-northeast-2"
+  region = "ap-northeast-1"
 }
 
-locals {
-  Service = "k8s"
-  Creator = "dyheo"
-  Group = "consulting"
+data "aws_region" "current" {}
 
-  pem_file = "dyheo-histech"
+locals {
+  Region = "${data.aws_region.current.name}"
+  CidrPrefix = "10.75"
+  Owner = "dy"
+  Creator = "dyheo"
+  Group = "cloudteam"
+
+  PemFile = "dy-tokyo-key"
 
   ## EC2 를 만들기 위한 로컬변수 선언
-  ami = "ami-0e4a9ad2eb120e054" ## AMAZON LINUX 2
-  instance_type = "t3.small"
-  #ami = "ami-00632d95bb5b7136d"  ## AMAZON LINUX 2 ARM
-  #instance_type = "t4g.micro"    ## vCPU : 2, GiB : 1
+  ## aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 --region ap-northeast-1
+  ami = "ami-0224c3ca00a6ee32f"
+  instance_type = "t2.micro"
 }
 
 ## TAG NAME 으로 vpc id 를 가져온다.
 data "aws_vpc" "this" {
   filter {
     name = "tag:Name"
-    values = ["${local.Service}-vpc"]
+    values = ["${local.Owner}-vpc"]
   }
 }
 
@@ -31,57 +35,57 @@ data "aws_security_group" "sg-core" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.Service}-sg-core"]
+    values = ["${local.Owner}-sg-core"]
   }
 }
 
-#resource "aws_security_group" "sg-ec2" {
-#  name = "${local.Service}-sg-ec2"
-#  description = "ec2 server 80 service test"
-#  vpc_id = "${data.aws_vpc.this.id}"
-#
-#  ingress {
-#    from_port       = 3000
-#    protocol        = "tcp"
-#    to_port         = 3000
-#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-#  }
-#
-#  ingress {
-#    from_port       = 8080 
-#    protocol        = "tcp"
-#    to_port         = 8080
-#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-#  }
-#
-#  ## mysql port 
-#  ingress {
-#    from_port       = 3306
-#    protocol        = "tcp"
-#    to_port         = 3306
-#    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
-#  }
-#
-#  egress {
-#    from_port   = 0
-#    protocol    = "-1"
-#    to_port     = 0
-#    cidr_blocks = ["0.0.0.0/0"]
-#  }
-#
-#  tags = {
-#    Name = "${local.Service}-sg-ec2"
-#    Creator = "${local.Creator}"
-#    Group = "${local.Group}"
-#  }
-#}
+resource "aws_security_group" "sg-ec2" {
+  name = "${local.Owner}-sg-ec2"
+  description = "ec2 server 80 service test"
+  vpc_id = "${data.aws_vpc.this.id}"
+
+  #ingress {
+  #  from_port       = 3000
+  #  protocol        = "tcp"
+  #  to_port         = 3000
+  #  cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+  #}
+
+  ingress {
+    from_port       = 8080 
+    protocol        = "tcp"
+    to_port         = 8080
+    cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+  }
+
+  ## mysql port 
+  #ingress {
+  #  from_port       = 3306
+  #  protocol        = "tcp"
+  #  to_port         = 3306
+  #  cidr_blocks = [data.aws_vpc.this.cidr_block,"125.177.68.23/32","211.206.114.80/32"]
+  #}
+
+  egress {
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.Owner}-sg-ec2"
+    Creator = "${local.Creator}"
+    Group = "${local.Group}"
+  }
+}
 
 ## TAG NAME 으로 subnet 을 가져온다.
 data "aws_subnet_ids" "public" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.Service}-sb-public-*"]
+    values = ["${local.Owner}-sb-public-*"]
   }
 }
 
@@ -96,7 +100,7 @@ resource "aws_instance" "dyheo-ec2" {
   ami = "${local.ami}"
   associate_public_ip_address = true
   instance_type = "${local.instance_type}"
-  key_name = "${local.pem_file}"
+  key_name = "${local.PemFile}"
   vpc_security_group_ids = [
     "${data.aws_security_group.sg-core.id}",
     "${aws_security_group.sg-ec2.id}"
@@ -107,7 +111,7 @@ resource "aws_instance" "dyheo-ec2" {
   subnet_id = element(tolist(data.aws_subnet_ids.public.ids), count.index)
 
   tags = {
-    Name = "${local.Service}-ec2-${count.index + 1}",
+    Name = "${local.Owner}-ec2-${count.index + 1}",
     Creator = "${local.Creator}"
     Group = "${local.Group}"
   }
@@ -117,7 +121,7 @@ resource "aws_instance" "dyheo-ec2" {
 #    connection {
 #      host = self.public_ip
 #      user = "ec2-user"
-#      private_key = "${file("~/.ssh/${local.pem_file}.pem")}"
+#      private_key = "${file("~/.ssh/${local.PemFile}.pem")}"
 #    }
 #    inline = [
 #      "echo 'repository set'",
