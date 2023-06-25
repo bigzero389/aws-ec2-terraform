@@ -200,6 +200,7 @@ resource "aws_security_group" "sg-core" {
        to_port          = 80
        protocol         = "tcp"
        cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.CidrPrefix}.0.0/16"]
+       #cidr_blocks      = ["0.0.0.0/0"]
        ipv6_cidr_blocks = []
        prefix_list_ids  = []
        security_groups  = []
