@@ -186,8 +186,8 @@ resource "aws_security_group" "sg-core" {
       description      = "SSH open"
       from_port        = 22
       to_port          = 22
-      protocol         = "tcp"
       type             = "ssh"
+      protocol         = "tcp"
       cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.CidrPrefix}.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
@@ -210,6 +210,17 @@ resource "aws_security_group" "sg-core" {
        description      = "HTTPS open"
        from_port        = 443
        to_port          = 443
+       protocol         = "tcp"
+       cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.CidrPrefix}.0.0/16"]
+       ipv6_cidr_blocks = []
+       prefix_list_ids  = []
+       security_groups  = []
+       self = false
+     },
+     {
+       description      = "redis"
+       from_port        = 6379
+       to_port          = 6379
        protocol         = "tcp"
        cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.CidrPrefix}.0.0/16"]
        ipv6_cidr_blocks = []

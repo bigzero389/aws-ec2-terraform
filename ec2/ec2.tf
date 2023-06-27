@@ -39,6 +39,7 @@ data "aws_security_group" "sg-core" {
   }
 }
 
+/*
 resource "aws_security_group" "sg-ec2" {
   name = "${local.Owner}-sg-ec2"
   description = "ec2 server 80 service test"
@@ -79,6 +80,7 @@ resource "aws_security_group" "sg-ec2" {
     Group = "${local.Group}"
   }
 }
+*/
 
 ## TAG NAME 으로 subnet 을 가져온다.
 data "aws_subnet_ids" "public" {
@@ -101,10 +103,14 @@ resource "aws_instance" "dyheo-ec2" {
   associate_public_ip_address = true
   instance_type = "${local.instance_type}"
   key_name = "${local.PemFile}"
+#  vpc_security_group_ids = [
+#    "${data.aws_security_group.sg-core.id}",
+#    "${aws_security_group.sg-ec2.id}"
+#  ]
   vpc_security_group_ids = [
-    "${data.aws_security_group.sg-core.id}",
-    "${aws_security_group.sg-ec2.id}"
+    "${data.aws_security_group.sg-core.id}"
   ]
+
 
   count = length(data.aws_subnet_ids.public.ids)
   #subnet_id = "${data.aws_subnet.public.id}"
