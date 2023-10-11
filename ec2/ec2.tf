@@ -1,32 +1,33 @@
 # AWS용 프로바이더 구성
 provider "aws" {
   profile = "default"
-  #region = "ap-northeast-2"
-  region = "ap-northeast-1"
+  region = "ap-northeast-2"
+#  region = "ap-northeast-1"
 }
 
 data "aws_region" "current" {}
 
 locals {
-  Region = "${data.aws_region.current.name}"
-  CidrPrefix = "10.75"
-  Owner = "dy"
-  Creator = "dyheo"
-  Group = "cloudteam"
+  region = "${data.aws_region.current.name}"
+  cidr-prefix = "10.75"
+  owner = "dy"
+  creator = "dyheo"
+  group = "cloudteam"
 
-  PemFile = "dy-tokyo-key"
+  PemFile = "dy-cloudteam-aws-dev"
 
   ## EC2 를 만들기 위한 로컬변수 선언
   ## aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 --region ap-northeast-1
-  ami = "ami-0224c3ca00a6ee32f"
-  instance_type = "t2.micro"
+#  ami = "ami-0224c3ca00a6ee32f"
+  ami = "ami-0c9c942bd7bf113a2" # Ubuntu, 22.04 LTS
+  instance_type = "t3a.small"
 }
 
 ## TAG NAME 으로 vpc id 를 가져온다.
 data "aws_vpc" "this" {
   filter {
     name = "tag:Name"
-    values = ["${local.Owner}-vpc"]
+    values = ["${local.owner}-vpc"]
   }
 }
 
@@ -35,7 +36,7 @@ data "aws_security_group" "sg-core" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.Owner}-sg-core"]
+    values = ["${local.owner}-sg-core"]
   }
 }
 
@@ -87,7 +88,7 @@ data "aws_subnet_ids" "public" {
   vpc_id = "${data.aws_vpc.this.id}"
   filter {
     name = "tag:Name"
-    values = ["${local.Owner}-sb-public-*"]
+    values = ["${local.owner}-sb-public-*"]
   }
 }
 
@@ -117,9 +118,9 @@ resource "aws_instance" "dyheo-ec2" {
   subnet_id = element(tolist(data.aws_subnet_ids.public.ids), count.index)
 
   tags = {
-    Name = "${local.Owner}-ec2-${count.index + 1}",
-    Creator = "${local.Creator}"
-    Group = "${local.Group}"
+    Name = "${local.owner}-ec2-${count.index + 1}",
+    Creator = "${local.creator}"
+    Group = "${local.group}"
   }
 
 # EC2 preconfig

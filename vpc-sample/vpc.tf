@@ -17,11 +17,11 @@ data "aws_region" "current" {}
 locals {
   ### start: 여기서부터 용도별 변경
   region = "${data.aws_region.current.name}"
-  cidr-prefix = ""  ### ex) cidr-prefix = "10.75"
-  owner = ""        ### ex) owner = "dy"
-  creator = ""      ### ex) creator = "dyheo"
-  group = ""        ### ex) group = "cloudteam"
-  pem-file = ""     ### ex) pem-file = "dy-cloudteam-aws-dev"
+  cidr-prefix = ""  ### ex) cidr-prefix = "10.75"   만들어질 subnet 의 B 클래스 prefix
+  owner = ""        ### ex) owner = "dy"            만들어질 각종 자원들에 식별가능한 이니셜 기입
+  creator = ""      ### ex) creator = "dyheo"       만들어질 자원들에 태그에 creator 를 넣는다.
+  group = ""        ### ex) group = "cloudteam"     만들어질 자원들에 테그에 group 을 넣는다.
+  pem-file = ""     ### ex) pem-file = "dy-cloudteam-aws-dev"  vpc 에서 만들어질 ec2 에서 사용할 pem 키를 지정한다.
   ### end: 여기까지 용도별 변경
 
   public_subnets = {
@@ -171,6 +171,7 @@ resource "aws_route" "private_nat_gateway" {
 
 
 # AWS Security Group
+### start: 여기서부터 용도별 변경, 211.206.114.80/32 은 등촌동 본사에서만 접속가능하게 하기 위한 공인 IP 임.
 resource "aws_security_group" "sg-core" {
   name        = "${local.owner}-sg-core"
   description = "${local.owner} security group"
@@ -182,7 +183,7 @@ resource "aws_security_group" "sg-core" {
       from_port = -1
       to_port = -1
       protocol = "icmp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
+      cidr_blocks      = ["211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -194,7 +195,7 @@ resource "aws_security_group" "sg-core" {
       to_port          = 22
       type             = "ssh"
       protocol         = "tcp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
+      cidr_blocks      = ["211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -205,7 +206,7 @@ resource "aws_security_group" "sg-core" {
        from_port        = 80 
        to_port          = 80
        protocol         = "tcp"
-       cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
+       cidr_blocks      = ["211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
        #cidr_blocks      = ["0.0.0.0/0"]
        ipv6_cidr_blocks = []
        prefix_list_ids  = []
@@ -217,23 +218,12 @@ resource "aws_security_group" "sg-core" {
        from_port        = 443
        to_port          = 443
        protocol         = "tcp"
-       cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
+       cidr_blocks      = ["211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
        ipv6_cidr_blocks = []
        prefix_list_ids  = []
        security_groups  = []
        self = false
      },
-    {
-      description      = "ALL Allow from HQ"
-      from_port        = 0
-      to_port          = 65535
-      protocol         = "tcp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self = false
-    },
 #     {
 #       description      = "redis"
 #       from_port        = 6379
@@ -268,6 +258,7 @@ resource "aws_security_group" "sg-core" {
   }
 }
 
+### end: 여기서까지 용도별 변경
 
 output "aws_vpc" {
   value = aws_vpc.this.id
