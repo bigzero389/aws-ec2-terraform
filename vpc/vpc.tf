@@ -17,11 +17,11 @@ data "aws_region" "current" {}
 locals {
   ### start: 여기서부터 용도별 변경
   region = "${data.aws_region.current.name}"
-  cidr-prefix = ""  ### ex) cidr-prefix = "10.75"
-  owner = ""        ### ex) owner = "dy"
-  creator = ""      ### ex) creator = "dyheo"
-  group = ""        ### ex) group = "cloudteam"
-  pem-file = ""     ### ex) pem-file = "dy-cloudteam-aws-dev"
+  cidr-prefix = "10.75"
+  owner = "dy"
+  creator = "dyheo"
+  group = "cloudteam"
+  pem-file = "dy-cloudteam-aws-dev"
   ### end: 여기까지 용도별 변경
 
   public_subnets = {
@@ -223,17 +223,17 @@ resource "aws_security_group" "sg-core" {
        security_groups  = []
        self = false
      },
-    {
-      description      = "ALL Allow from HQ"
-      from_port        = 0
-      to_port          = 65535
-      protocol         = "tcp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self = false
-    },
+    # {
+    #   description      = "ALL Allow from HQ"
+    #   from_port        = 0
+    #   to_port          = 65535
+    #   protocol         = "tcp"
+    #   cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "${local.cidr-prefix}.0.0/16"]
+    #   ipv6_cidr_blocks = []
+    #   prefix_list_ids  = []
+    #   security_groups  = []
+    #   self = false
+    # },
 #     {
 #       description      = "redis"
 #       from_port        = 6379
